@@ -1,42 +1,45 @@
-import _ from "lodash"
+import React from "react"
 import {GetStaticProps, NextPage} from "next";
 import {supabase} from "../utils/supabaseInit";
 import {Notice, Task} from "../types/types";
+import _ from "lodash";
 import {Layout} from "../components/Layout";
-import {useRouter} from "next/router";
 import Link from "next/link";
+import {useRouter} from "next/router";
+
+// データ付きのhtmlをランタイムに再生成する
 
 
-// supabaseに取得してデータを取得してくるコード
+// ISRの発動条件
+//　ISRのページにダイレクトアクセスしてきた時
+// isrのリンクで飛んできた時
 export const getStaticProps: GetStaticProps = async () => {
-    console.log("getStatiProps/ssg が呼び出されました");
-    //tableを取得する
+    console.log("getStaticProps/ISR が呼び出されました")
     const {data: tasks} = await supabase
         .from('todos')
         .select('*')
         .order('created_at', {ascending: true})
 
-    //一番新しい潤
     const {data: notices} = await supabase
         .from('notices')
         .select('*')
         .order('created_at', {ascending: true})
 
-    return {props: {tasks, notices}}
+//　isrの場合はrevalidateを入れる
+//  5秒間で一回だけ
+    return {props: {tasks, notices},revalidate:5}
 }
 
 type StaticProps = {
-    tasks: Task[]
-    notices: Notice[]
+    tasks: Task[];
+    notices:Notice[]
 }
 
-//nextのページの型のコンポーネント
-const Ssg: NextPage<StaticProps> = ({tasks, notices}) => {
+
+const Isr:NextPage<StaticProps> = ({tasks,notices}) => {
     const router =useRouter()
-
-    return <Layout title="SSG">
+    return <Layout title="ISR">
         <p className="mb-3 text-blue-500">SSG</p>
-
         <ul className="mb-3">
             {
                 _.map(tasks, (task) => (
@@ -49,7 +52,6 @@ const Ssg: NextPage<StaticProps> = ({tasks, notices}) => {
             }
         </ul>
         <div>~~~~~~~~~~~~~~~~~</div>
-
         <ul className="mb-3">
             {
                 _.map(notices, (notice) => (
@@ -62,16 +64,15 @@ const Ssg: NextPage<StaticProps> = ({tasks, notices}) => {
             }
         </ul>
 
+
         <Link href="/ssr" prefetch={false}>
-            <a className="mb-3 text-xs">Link to ssr</a>
+            <a className="my-3 text-xs">Link to ssr</a>
         </Link>
 
-        <button className="mb-3 text-xs" onClick={()=>router.push("/ssr")}>
-            Route to ssr
+        <button className="mb-3 text-xs" onClick={()=>router.push('/ssr')}>
+            Router to ssr
         </button>
-
-
     </Layout>
 }
 
-export default Ssg
+export default Isr
