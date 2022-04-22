@@ -33,7 +33,7 @@ const Csr:NextPage =()=>{
 
     return(
         <Layout title="CSR">
-            <p className="mb-3 text-blue-500">SSG + CSF</p>
+            <p className="mb-3 text-blue-500">SSG + CSF(Client Side Fetch)</p>
             <ul className="mb-3">
                 {
                     _.map(tasks,(task)=>(
